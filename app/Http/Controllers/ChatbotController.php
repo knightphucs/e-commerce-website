@@ -15,7 +15,7 @@ class ChatbotController extends Controller
             'history' => ['nullable', 'array'],
         ]);
 
-        $apiKey = config('services.anthropic.api_key');
+        $apiKey = config('services.openai.api_key');
 
         if (! $apiKey) {
             return response()->json(['reply' => 'Chatbot hiện chưa được cấu hình. Vui lòng liên hệ quản trị viên.']);
@@ -34,18 +34,17 @@ EOT;
 
         $messages = collect($request->history ?? [])
             ->map(fn ($msg) => ['role' => $msg['role'], 'content' => $msg['content']])
+            ->prepend(['role' => 'system', 'content' => $systemPrompt])
             ->push(['role' => 'user', 'content' => $request->message])
             ->values()
             ->toArray();
 
         $response = Http::withHeaders([
-            'x-api-key' => $apiKey,
-            'anthropic-version' => '2023-06-01',
-            'content-type' => 'application/json',
-        ])->post('https://api.anthropic.com/v1/messages', [
-            'model' => 'claude-haiku-4-5-20251001',
+            'Authorization' => 'Bearer '.$apiKey,
+            'Content-Type' => 'application/json',
+        ])->post('https://api.openai.com/v1/chat/completions', [
+            'model' => 'gpt-4o-mini',
             'max_tokens' => 500,
-            'system' => $systemPrompt,
             'messages' => $messages,
         ]);
 
@@ -53,7 +52,7 @@ EOT;
             return response()->json(['reply' => 'Xin lỗi, có lỗi xảy ra. Vui lòng thử lại sau.'], 500);
         }
 
-        $reply = $response->json('content.0.text', 'Xin lỗi, không thể xử lý yêu cầu của bạn.');
+        $reply = $response->json('choices.0.message.content', 'Xin lỗi, không thể xử lý yêu cầu của bạn.');
 
         return response()->json(['reply' => $reply]);
     }
