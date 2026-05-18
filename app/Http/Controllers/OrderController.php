@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\UpdateOrderPaymentStatusRequest;
 use App\Http\Requests\UpdateOrderStatusRequest;
 use App\Mail\OrderStatusUpdated;
 use App\Models\Order;
@@ -45,7 +46,13 @@ class OrderController extends Controller
             'cancelled' => 'Đã hủy',
         ];
 
-        return view('orders.show', compact('order', 'statuses'));
+        $paymentStatuses = [
+            'unpaid' => 'Chưa thanh toán',
+            'paid' => 'Đã thanh toán',
+            'refunded' => 'Đã hoàn tiền',
+        ];
+
+        return view('orders.show', compact('order', 'statuses', 'paymentStatuses'));
     }
 
     public function updateStatus(UpdateOrderStatusRequest $request, Order $order): RedirectResponse
@@ -56,5 +63,13 @@ class OrderController extends Controller
 
         return redirect()->route('orders.show', $order)
             ->with('success', 'Trạng thái đơn hàng đã được cập nhật.');
+    }
+
+    public function updatePaymentStatus(UpdateOrderPaymentStatusRequest $request, Order $order): RedirectResponse
+    {
+        $order->update(['payment_status' => $request->payment_status]);
+
+        return redirect()->route('orders.show', $order)
+            ->with('success', 'Trạng thái thanh toán đã được cập nhật.');
     }
 }

@@ -66,6 +66,25 @@ test('editor can view order details', function () {
         ->assertSee('Test Customer');
 });
 
+test('editor can update order payment status', function () {
+    $order = Order::factory()->create();
+
+    $this->actingAs($this->editor)
+        ->patch(route('orders.updatePaymentStatus', $order), ['payment_status' => 'paid'])
+        ->assertRedirect(route('orders.show', $order))
+        ->assertSessionHas('success');
+
+    expect($order->fresh()->payment_status)->toBe('paid');
+});
+
+test('updating payment status requires a valid value', function () {
+    $order = Order::factory()->create();
+
+    $this->actingAs($this->editor)
+        ->patch(route('orders.updatePaymentStatus', $order), ['payment_status' => 'invalid-status'])
+        ->assertSessionHasErrors('payment_status');
+});
+
 // ------- Update Status -------
 
 test('editor can update order status', function () {

@@ -165,12 +165,26 @@
                         </div>
                     </div>
 
-                    @if ($order->payment_status !== 'paid' && $order->payment_method !== 'vnpay')
-                        <a href="{{ route('payment.checkout', $order) }}"
-                            class="mt-4 block w-full rounded-lg bg-brand-500 py-2.5 text-center text-sm font-medium text-white hover:bg-brand-600">
-                            Thanh toán VNPay
-                        </a>
-                    @endif
+                    <form action="{{ route('orders.updatePaymentStatus', $order) }}" method="POST"
+                        class="mt-4 space-y-3 border-t border-gray-100 pt-4 dark:border-gray-700">
+                        @csrf
+                        @method('PATCH')
+                        <div>
+                            <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                                Cập nhật trạng thái thanh toán
+                            </label>
+                            <select name="payment_status"
+                                class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm focus:border-brand-500 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white">
+                                @foreach ($paymentStatuses as $value => $label)
+                                    <option value="{{ $value }}" @selected($order->payment_status === $value)>{{ $label }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <button type="submit"
+                            class="w-full rounded-lg bg-brand-500 py-2.5 text-sm font-medium text-white hover:bg-brand-600">
+                            Cập nhật thanh toán
+                        </button>
+                    </form>
                 </div>
 
                 <a href="{{ route('orders.index') }}"

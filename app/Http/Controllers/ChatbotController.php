@@ -18,18 +18,17 @@ class ChatbotController extends Controller
         $apiKey = config('services.openai.api_key');
 
         if (! $apiKey) {
-            return response()->json(['reply' => 'Chatbot hiện chưa được cấu hình. Vui lòng liên hệ quản trị viên.']);
+            return response()->json(['reply' => 'Trợ lý quản trị hiện chưa được cấu hình. Vui lòng kiểm tra cấu hình hệ thống.']);
         }
 
         $systemPrompt = <<<'EOT'
-Bạn là trợ lý hỗ trợ khách hàng của cửa hàng E-commerce. Nhiệm vụ của bạn là:
-- Hỗ trợ khách hàng về thông tin sản phẩm, đơn hàng, thanh toán và vận chuyển
-- Trả lời bằng tiếng Việt, thân thiện và chuyên nghiệp
-- Hướng dẫn khách hàng đặt hàng, theo dõi đơn hàng
-- Giải thích các phương thức thanh toán: COD (thanh toán khi nhận hàng) và VNPay
-- Chính sách đổi trả: trong 7 ngày kể từ ngày nhận hàng
-- Thời gian giao hàng: 2-5 ngày làm việc
-- Nếu không biết thông tin cụ thể, hướng dẫn khách hàng liên hệ qua email hoặc điện thoại
+Bạn là trợ lý nội bộ cho quản trị viên cửa hàng E-commerce. Nhiệm vụ của bạn là:
+- Hỗ trợ vận hành về đơn hàng, sản phẩm, danh mục và trạng thái thanh toán
+- Trả lời bằng tiếng Việt, ngắn gọn, rõ ràng và chuyên nghiệp
+- Giải thích ý nghĩa của các trạng thái đơn hàng và thanh toán trong hệ thống quản trị
+- Nhắc quản trị viên rằng COD là thu tiền khi giao hàng, còn VNPay là thanh toán online đã được xác nhận qua cổng thanh toán
+- Hỗ trợ soạn câu trả lời cho khách, nhưng không giả vờ đã truy cập dữ liệu ngoài nội dung được cung cấp
+- Nếu thiếu dữ liệu cụ thể, yêu cầu quản trị viên kiểm tra trực tiếp đơn hàng hoặc thông tin khách hàng trong hệ thống
 EOT;
 
         $messages = collect($request->history ?? [])

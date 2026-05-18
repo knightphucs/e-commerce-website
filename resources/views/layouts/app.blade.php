@@ -129,7 +129,7 @@
 
     </div>
 
-    {{-- Chatbot Widget --}}
+    {{-- Admin Assistant Widget --}}
     <div x-data="chatbot()" class="fixed bottom-6 right-6 z-50">
         {{-- Chat Window --}}
         <div x-show="isOpen" x-transition:enter="transition ease-out duration-200"
@@ -149,7 +149,7 @@
                         </svg>
                     </div>
                     <div>
-                        <p class="text-sm font-semibold text-white">Hỗ trợ khách hàng</p>
+                        <p class="text-sm font-semibold text-white">Trợ lý quản trị</p>
                         <p class="text-xs text-white/70">AI Assistant</p>
                     </div>
                 </div>
@@ -226,7 +226,7 @@
                 input: '',
                 isLoading: false,
                 messages: [
-                    { role: 'assistant', content: 'Xin chào! Tôi là trợ lý hỗ trợ khách hàng. Tôi có thể giúp gì cho bạn?' }
+                    { role: 'assistant', content: 'Xin chào! Tôi là trợ lý quản trị. Tôi có thể hỗ trợ gì cho công việc vận hành hôm nay?' }
                 ],
                 scrollToBottom() {
                     this.$nextTick(() => {

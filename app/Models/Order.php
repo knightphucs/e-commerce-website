@@ -26,6 +26,7 @@ class Order extends Model
         'payment_method',
         'payment_status',
         'vnpay_txn_ref',
+        'tracking_code',
     ];
 
     protected function casts(): array

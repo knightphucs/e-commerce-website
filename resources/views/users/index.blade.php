@@ -10,6 +10,13 @@
             </x-ui.alert>
         @endsession
 
+        <div class="flex justify-end">
+            <a href="{{ route('users.create') }}"
+                class="rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600">
+                Add User
+            </a>
+        </div>
+
         <div class="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
             <div class="max-w-full overflow-x-auto custom-scrollbar">
                 <table class="w-full min-w-[1102px]">
@@ -20,6 +27,9 @@
                             </th>
                             <th class="px-5 py-3 text-left sm:px-6">
                                 <p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">Email</p>
+                            </th>
+                            <th class="px-5 py-3 text-left sm:px-6">
+                                <p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">Role</p>
                             </th>
                             <th class="px-5 py-3 text-left sm:px-6">
                                 <p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">Created At</p>
@@ -37,6 +47,9 @@
                                 </td>
                                 <td class="px-5 py-4 sm:px-6">
                                     <p class="text-gray-500 text-theme-sm dark:text-gray-400">{{ $user->email }}</p>
+                                </td>
+                                <td class="px-5 py-4 sm:px-6">
+                                    <p class="text-gray-500 text-theme-sm dark:text-gray-400">{{ ucfirst($user->role) }}</p>
                                 </td>
                                 <td class="px-5 py-4 sm:px-6">
                                     <p class="text-gray-500 text-theme-sm dark:text-gray-400">{{ $user->created_at }}</p>
@@ -77,4 +90,3 @@
         @endif
     </div>
 @endsection
-

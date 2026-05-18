@@ -32,6 +32,10 @@ class MenuHelper
 
     public static function getAdministrationItems(): array
     {
+        if (! auth()->user()?->isAdmin()) {
+            return [];
+        }
+
         return [
             [
                 'icon' => 'charts',
@@ -49,7 +53,7 @@ class MenuHelper
 
     public static function getMenuGroups(): array
     {
-        return [
+        return array_values(array_filter([
             [
                 'title' => 'Menu',
                 'items' => self::getMainNavItems(),
@@ -58,7 +62,7 @@ class MenuHelper
                 'title' => 'Quản trị',
                 'items' => self::getAdministrationItems(),
             ],
-        ];
+        ], fn (array $group) => $group['items'] !== []));
     }
 
     public static function isActive($path): bool
