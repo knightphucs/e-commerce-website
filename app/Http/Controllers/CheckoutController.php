@@ -17,6 +17,7 @@ class CheckoutController extends Controller
     public function create(): View
     {
         $items = $this->cartItems();
+        $user = auth()->user();
 
         if ($items->isEmpty()) {
             return view('checkout.empty');
@@ -25,6 +26,7 @@ class CheckoutController extends Controller
         return view('checkout.create', [
             'items' => $items,
             'total' => $items->sum('subtotal'),
+            'user' => $user,
         ]);
     }
 
@@ -61,6 +63,7 @@ class CheckoutController extends Controller
 
             $order = Order::create([
                 ...$request->validated(),
+                'user_id' => $request->user()->id,
                 'subtotal' => $subtotal,
                 'total' => $subtotal,
                 'tracking_code' => Str::upper(Str::random(12)),

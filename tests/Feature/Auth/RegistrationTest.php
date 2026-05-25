@@ -9,14 +9,14 @@ class RegistrationTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_registration_screen_is_not_available(): void
+    public function test_registration_screen_can_be_rendered(): void
     {
         $response = $this->get('/register');
 
-        $response->assertNotFound();
+        $response->assertOk();
     }
 
-    public function test_public_registration_is_not_available(): void
+    public function test_customers_can_register(): void
     {
         $response = $this->post('/register', [
             'name' => 'Test User',
@@ -25,7 +25,22 @@ class RegistrationTest extends TestCase
             'password_confirmation' => 'password',
         ]);
 
-        $this->assertGuest();
-        $response->assertNotFound();
+        $this->assertAuthenticated();
+        $response->assertRedirect(route('shop.index', absolute: false));
+    }
+
+    public function test_registration_redirects_to_intended_checkout(): void
+    {
+        $this->get(route('register', ['redirect_to' => route('checkout.create', absolute: false)]));
+
+        $response = $this->post('/register', [
+            'name' => 'Checkout Customer',
+            'email' => 'checkout@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ]);
+
+        $this->assertAuthenticated();
+        $response->assertRedirect(route('checkout.create', absolute: false));
     }
 }

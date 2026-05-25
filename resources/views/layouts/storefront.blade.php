@@ -7,6 +7,11 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $title ?? config('app.name') }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <style>
+        [x-cloak] {
+            display: none !important;
+        }
+    </style>
 </head>
 
 <body class="min-h-screen bg-gray-50 text-gray-900">
@@ -18,6 +23,19 @@
                 <a href="{{ route('cart.index') }}" class="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100">
                     Giỏ hàng ({{ array_sum(session('cart', [])) }})
                 </a>
+                @guest
+                    <button type="button" x-data @click="$dispatch('open-checkout-auth-modal')"
+                        class="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100">
+                        Đăng nhập
+                    </button>
+                @else
+                    <form action="{{ route('logout') }}" method="POST">
+                        @csrf
+                        <button type="submit" class="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100">
+                            Đăng xuất
+                        </button>
+                    </form>
+                @endguest
             </nav>
         </div>
     </header>
@@ -31,6 +49,41 @@
         @endsession
         @yield('content')
     </main>
+
+    @guest
+        <div x-data="{ isOpen: false }" x-show="isOpen" x-cloak x-transition.opacity
+            @open-checkout-auth-modal.window="isOpen = true" @keydown.escape.window="isOpen = false"
+            class="fixed inset-0 z-[60] flex items-center justify-center bg-gray-900/50 px-4 py-6">
+            <div class="absolute inset-0" @click="isOpen = false"></div>
+            <section x-show="isOpen" x-transition class="relative w-full max-w-md rounded-lg bg-white p-6 shadow-xl">
+                <button type="button" @click="isOpen = false"
+                    class="absolute top-3 right-3 rounded-lg p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+                    aria-label="Đóng">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18 6 6 18" />
+                        <path d="m6 6 12 12" />
+                    </svg>
+                </button>
+
+                <h2 class="text-xl font-semibold text-gray-900">Đăng ký để đặt hàng</h2>
+                <p class="mt-2 text-sm text-gray-600">
+                    Bạn cần đăng nhập hoặc tạo tài khoản trước khi thanh toán.
+                </p>
+
+                <div class="mt-6 grid gap-3 sm:grid-cols-2">
+                    <a href="{{ route('register', ['redirect_to' => route('checkout.create', absolute: false)]) }}"
+                        class="rounded-lg bg-gray-900 px-4 py-3 text-center text-sm font-medium text-white hover:bg-gray-800">
+                        Đăng ký
+                    </a>
+                    <a href="{{ route('login', ['redirect_to' => route('checkout.create', absolute: false)]) }}"
+                        class="rounded-lg border border-gray-300 px-4 py-3 text-center text-sm font-medium text-gray-700 hover:bg-gray-50">
+                        Đăng nhập
+                    </a>
+                </div>
+            </section>
+        </div>
+    @endguest
 
     <div x-data="customerChatbot()" data-testid="customer-chatbot" class="fixed right-3 bottom-3 z-50 sm:right-5 sm:bottom-5"
         style="right: 1.25rem; bottom: 1.25rem; left: auto;">

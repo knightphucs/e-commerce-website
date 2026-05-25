@@ -51,7 +51,14 @@
                     <span>Tổng cộng</span>
                     <span>{{ number_format($total, 0, ',', '.') }} đ</span>
                 </div>
-                <a href="{{ route('checkout.create') }}" class="mt-5 block rounded-lg bg-gray-900 px-4 py-3 text-center font-medium text-white">Tiến hành thanh toán</a>
+                @auth
+                    <a href="{{ route('checkout.create') }}" class="mt-5 block rounded-lg bg-gray-900 px-4 py-3 text-center font-medium text-white">Tiến hành thanh toán</a>
+                @else
+                    <button type="button" x-data @click="$dispatch('open-checkout-auth-modal')"
+                        class="mt-5 block w-full rounded-lg bg-gray-900 px-4 py-3 text-center font-medium text-white">
+                        Tiến hành thanh toán
+                    </button>
+                @endauth
             </aside>
         </div>
     @endif

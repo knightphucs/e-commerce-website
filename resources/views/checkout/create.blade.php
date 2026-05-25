@@ -12,12 +12,12 @@
                 <div class="grid gap-4 sm:grid-cols-2">
                     <div>
                         <label class="mb-1 block text-sm font-medium">Họ tên</label>
-                        <input name="customer_name" value="{{ old('customer_name') }}" class="w-full rounded-lg border border-gray-300 px-4 py-2.5">
+                        <input name="customer_name" value="{{ old('customer_name', $user->name) }}" class="w-full rounded-lg border border-gray-300 px-4 py-2.5">
                         @error('customer_name')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
                     </div>
                     <div>
                         <label class="mb-1 block text-sm font-medium">Email</label>
-                        <input name="customer_email" type="email" value="{{ old('customer_email') }}" class="w-full rounded-lg border border-gray-300 px-4 py-2.5">
+                        <input name="customer_email" type="email" value="{{ old('customer_email', $user->email) }}" class="w-full rounded-lg border border-gray-300 px-4 py-2.5">
                         @error('customer_email')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
                     </div>
                 </div>

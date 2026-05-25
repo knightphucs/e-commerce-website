@@ -2,11 +2,14 @@
 
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\User;
 
 test('customer can place a cod order from cart', function () {
     $product = Product::factory()->create(['price' => 150000, 'stock' => 3]);
+    $user = User::factory()->create();
 
     $response = $this
+        ->actingAs($user)
         ->withSession(['cart' => [$product->id => 2]])
         ->post(route('checkout.store'), [
             'customer_name' => 'Nguyen Van A',
@@ -21,6 +24,7 @@ test('customer can place a cod order from cart', function () {
     $response->assertRedirect(route('storefront.orders.show', ['order' => $order->tracking_code]));
 
     expect($order->payment_method)->toBe('cod')
+        ->and($order->user_id)->toBe($user->id)
         ->and($order->payment_status)->toBe('unpaid')
         ->and($order->items)->toHaveCount(1)
         ->and($product->fresh()->stock)->toBe(1);
@@ -33,8 +37,10 @@ test('customer is redirected to vnpay checkout after choosing online payment', f
     config()->set('services.vnpay.return_url', route('payment.callback'));
 
     $product = Product::factory()->create(['stock' => 2]);
+    $user = User::factory()->create();
 
     $response = $this
+        ->actingAs($user)
         ->withSession(['cart' => [$product->id => 1]])
         ->post(route('checkout.store'), [
             'customer_name' => 'Nguyen Van B',
@@ -51,8 +57,10 @@ test('customer is redirected to vnpay checkout after choosing online payment', f
 
 test('checkout rejects insufficient stock', function () {
     $product = Product::factory()->create(['stock' => 1]);
+    $user = User::factory()->create();
 
     $this
+        ->actingAs($user)
         ->withSession(['cart' => [$product->id => 2]])
         ->post(route('checkout.store'), [
             'customer_name' => 'Nguyen Van C',
@@ -62,4 +70,36 @@ test('checkout rejects insufficient stock', function () {
             'payment_method' => 'cod',
         ])
         ->assertSessionHasErrors('cart');
+});
+
+test('guest is redirected to login before checkout', function () {
+    $product = Product::factory()->create();
+
+    $this
+        ->withSession(['cart' => [$product->id => 1]])
+        ->get(route('checkout.create'))
+        ->assertRedirect(route('login'));
+
+    $this
+        ->withSession(['cart' => [$product->id => 1]])
+        ->post(route('checkout.store'), [
+            'customer_name' => 'Nguyen Van D',
+            'customer_email' => 'customer-d@example.com',
+            'customer_phone' => '0933333333',
+            'customer_address' => '321 Hai Ba Trung',
+            'payment_method' => 'cod',
+        ])
+        ->assertRedirect(route('login'));
+});
+
+test('guest sees registration modal trigger on cart checkout button', function () {
+    $product = Product::factory()->create();
+
+    $this
+        ->withSession(['cart' => [$product->id => 1]])
+        ->get(route('cart.index'))
+        ->assertOk()
+        ->assertSee('open-checkout-auth-modal', false)
+        ->assertSee('Đăng ký để đặt hàng')
+        ->assertSee(route('register', ['redirect_to' => route('checkout.create', absolute: false)]), false);
 });

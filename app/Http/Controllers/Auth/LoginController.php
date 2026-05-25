@@ -14,8 +14,10 @@ use Illuminate\View\View;
 
 class LoginController extends Controller
 {
-    public function create(): View
+    public function create(Request $request): View
     {
+        $this->storeIntendedUrl($request);
+
         return view('pages.auth.signin');
     }
 
@@ -76,5 +78,13 @@ class LoginController extends Controller
     {
         return Str::transliterate(Str::lower($request->string('email')).'|'.$request->ip());
     }
-}
 
+    private function storeIntendedUrl(Request $request): void
+    {
+        $redirectTo = $request->string('redirect_to')->toString();
+
+        if (str_starts_with($redirectTo, '/') && ! str_starts_with($redirectTo, '//')) {
+            $request->session()->put('url.intended', $redirectTo);
+        }
+    }
+}

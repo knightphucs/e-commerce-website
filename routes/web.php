@@ -19,8 +19,10 @@ Route::get('cart', [CartController::class, 'index'])->name('cart.index');
 Route::post('cart/{product}', [CartController::class, 'store'])->name('cart.store');
 Route::patch('cart/{product}', [CartController::class, 'update'])->name('cart.update');
 Route::delete('cart/{product}', [CartController::class, 'destroy'])->name('cart.destroy');
-Route::get('checkout', [CheckoutController::class, 'create'])->name('checkout.create');
-Route::post('checkout', [CheckoutController::class, 'store'])->name('checkout.store');
+Route::middleware('auth')->group(function () {
+    Route::get('checkout', [CheckoutController::class, 'create'])->name('checkout.create');
+    Route::post('checkout', [CheckoutController::class, 'store'])->name('checkout.store');
+});
 Route::get('track/{order:tracking_code}', [CheckoutController::class, 'show'])->name('storefront.orders.show');
 Route::get('payment/{order:tracking_code}/checkout', [PaymentController::class, 'checkout'])->name('payment.checkout');
 Route::post('customer-chatbot/message', [CustomerChatbotController::class, 'send'])

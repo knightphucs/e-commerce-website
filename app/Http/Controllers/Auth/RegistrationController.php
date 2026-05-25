@@ -14,8 +14,10 @@ use Illuminate\View\View;
 
 class RegistrationController extends Controller
 {
-    public function create(): View
+    public function create(Request $request): View
     {
+        $this->storeIntendedUrl($request);
+
         return view('pages.auth.signup');
     }
 
@@ -33,7 +35,15 @@ class RegistrationController extends Controller
 
         Auth::login($user);
 
-        return redirect(route('dashboard', absolute: false));
+        return redirect()->intended(route('shop.index', absolute: false));
+    }
+
+    private function storeIntendedUrl(Request $request): void
+    {
+        $redirectTo = $request->string('redirect_to')->toString();
+
+        if (str_starts_with($redirectTo, '/') && ! str_starts_with($redirectTo, '//')) {
+            $request->session()->put('url.intended', $redirectTo);
+        }
     }
 }
-
