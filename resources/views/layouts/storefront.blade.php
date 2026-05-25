@@ -32,30 +32,43 @@
         @yield('content')
     </main>
 
-    <div x-data="customerChatbot()" class="fixed right-3 bottom-3 z-50 sm:right-5 sm:bottom-5">
-        <div class="w-[calc(100vw-1.5rem)] max-w-80 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl sm:w-80">
+    <div x-data="customerChatbot()" data-testid="customer-chatbot" class="fixed right-3 bottom-3 z-50 sm:right-5 sm:bottom-5"
+        style="right: 1.25rem; bottom: 1.25rem; left: auto;">
+        <button x-show="!isOpen" type="button" @click="isOpen = true; scrollToBottom()"
+            data-testid="customer-chatbot-launcher"
+            class="flex h-14 w-14 items-center justify-center rounded-full bg-gray-900 text-white shadow-xl transition hover:bg-gray-800 focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 focus:outline-none"
+            aria-label="Mở chatbot hỗ trợ">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24"
+                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                aria-hidden="true">
+                <path d="M12 8V4H8" />
+                <rect width="16" height="12" x="4" y="8" rx="3" />
+                <path d="M2 14h2" />
+                <path d="M20 14h2" />
+                <path d="M9 13v2" />
+                <path d="M15 13v2" />
+                <path d="M10 18h4" />
+            </svg>
+        </button>
+
+        <div x-show="isOpen" x-transition data-testid="customer-chatbot-window" style="display: none;"
+            class="flex max-h-[calc(100vh-1.5rem)] w-[calc(100vw-1.5rem)] max-w-80 flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl sm:max-h-[calc(100vh-2.5rem)] sm:w-80">
             <div class="flex items-center justify-between bg-gray-900 px-4 py-3 text-white">
                 <div>
                     <p class="text-sm font-semibold">Hỗ trợ khách hàng</p>
                     <p class="text-xs text-white/70">Trực tuyến</p>
                 </div>
-                <button type="button" @click="isMinimized = !isMinimized"
+                <button type="button" @click="isOpen = false"
                     class="rounded-md p-1 text-white/70 transition hover:bg-white/10 hover:text-white"
-                    :aria-label="isMinimized ? 'Mở rộng chatbot' : 'Thu gọn chatbot'">
-                    <svg x-show="!isMinimized" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                    aria-label="Đóng chatbot">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
                         fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M5 12h14" />
-                    </svg>
-                    <svg x-show="isMinimized" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
-                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                        style="display: none;">
-                        <path d="M12 5v14" />
                         <path d="M5 12h14" />
                     </svg>
                 </button>
             </div>
-            <div x-show="!isMinimized" x-transition>
-                <div x-ref="messagesContainer" class="h-72 space-y-3 overflow-y-auto p-4">
+            <div class="flex min-h-0 flex-1 flex-col">
+                <div x-ref="messagesContainer" class="min-h-0 flex-1 space-y-3 overflow-y-auto p-4 sm:h-72">
                     <template x-for="(message, index) in messages" :key="index">
                         <div :class="message.role === 'user' ? 'flex justify-end' : 'flex justify-start'">
                             <div :class="message.role === 'user' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-800'"
@@ -93,7 +106,7 @@
     <script>
         function customerChatbot() {
             return {
-                isMinimized: false,
+                isOpen: false,
                 input: '',
                 isLoading: false,
                 messages: [{ role: 'assistant', content: 'Xin chào! Tôi có thể hỗ trợ bạn về sản phẩm, đơn hàng hoặc thanh toán.' }],
