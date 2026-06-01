@@ -2,22 +2,20 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\GeminiChatClient;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
 
 class ChatbotController extends Controller
 {
-    public function send(Request $request): JsonResponse
+    public function send(Request $request, GeminiChatClient $gemini): JsonResponse
     {
         $request->validate([
             'message' => ['required', 'string', 'max:1000'],
             'history' => ['nullable', 'array'],
         ]);
 
-        $apiKey = config('services.openai.api_key');
-
-        if (! $apiKey) {
+        if (! $gemini->isConfigured()) {
             return response()->json(['reply' => 'Trợ lý quản trị hiện chưa được cấu hình. Vui lòng kiểm tra cấu hình hệ thống.']);
         }
 
@@ -31,27 +29,11 @@ Bạn là trợ lý nội bộ cho quản trị viên cửa hàng E-commerce. Nh
 - Nếu thiếu dữ liệu cụ thể, yêu cầu quản trị viên kiểm tra trực tiếp đơn hàng hoặc thông tin khách hàng trong hệ thống
 EOT;
 
-        $messages = collect($request->history ?? [])
-            ->map(fn ($msg) => ['role' => $msg['role'], 'content' => $msg['content']])
-            ->prepend(['role' => 'system', 'content' => $systemPrompt])
-            ->push(['role' => 'user', 'content' => $request->message])
-            ->values()
-            ->toArray();
+        $reply = $gemini->send($systemPrompt, $request->string('message')->toString(), $request->history ?? []);
 
-        $response = Http::withHeaders([
-            'Authorization' => 'Bearer '.$apiKey,
-            'Content-Type' => 'application/json',
-        ])->post('https://api.openai.com/v1/chat/completions', [
-            'model' => 'gpt-4o-mini',
-            'max_tokens' => 500,
-            'messages' => $messages,
-        ]);
-
-        if ($response->failed()) {
+        if (! $reply) {
             return response()->json(['reply' => 'Xin lỗi, có lỗi xảy ra. Vui lòng thử lại sau.'], 500);
         }
-
-        $reply = $response->json('choices.0.message.content', 'Xin lỗi, không thể xử lý yêu cầu của bạn.');
 
         return response()->json(['reply' => $reply]);
     }

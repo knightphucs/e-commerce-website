@@ -43,6 +43,11 @@ return [
         'api_key' => env('OPENAI_API_KEY'),
     ],
 
+    'gemini' => [
+        'api_key' => env('GEMINI_API_KEY'),
+        'model' => env('GEMINI_MODEL', 'gemini-2.0-flash'),
+    ],
+
     'vnpay' => [
         'tmn_code' => env('VNPAY_TMN_CODE', ''),
         'hash_secret' => env('VNPAY_HASH_SECRET', ''),
