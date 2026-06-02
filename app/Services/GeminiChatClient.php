@@ -2,68 +2,37 @@
 
 namespace App\Services;
 
-use Illuminate\Support\Facades\Http;
+use Laravel\Ai\Enums\Lab;
+use Laravel\Ai\Promptable;
+use Throwable;
 
 class GeminiChatClient
 {
     public function isConfigured(): bool
     {
-        return filled(config('services.gemini.api_key'));
+        return filled(config('ai.providers.gemini.key'));
     }
 
     /**
+     * @param  class-string<object>  $agent
      * @param  array<int, array{role: string, content: string}>  $history
      */
-    public function send(string $systemPrompt, string $message, array $history = []): ?string
+    public function send(string $agent, string $message, array $history = []): ?string
     {
-        $contents = collect($history)
-            ->filter(fn (array $message): bool => isset($message['role'], $message['content']))
-            ->map(fn (array $message): array => [
-                'role' => $message['role'] === 'assistant' ? 'model' : 'user',
-                'parts' => [
-                    ['text' => $message['content']],
-                ],
-            ])
-            ->push([
-                'role' => 'user',
-                'parts' => [
-                    ['text' => $message],
-                ],
-            ])
-            ->values()
-            ->toArray();
+        try {
+            /** @var Promptable $chatbot */
+            $chatbot = $agent::make(history: $history);
 
-        $response = Http::withHeaders([
-            'x-goog-api-key' => config('services.gemini.api_key'),
-            'Content-Type' => 'application/json',
-        ])
-            ->timeout(15)
-            ->connectTimeout(5)
-            ->retry([100, 300])
-            ->post($this->endpoint(), [
-                'systemInstruction' => [
-                    'parts' => [
-                        ['text' => $systemPrompt],
-                    ],
-                ],
-                'contents' => $contents,
-                'generationConfig' => [
-                    'maxOutputTokens' => 500,
-                ],
-            ]);
+            $response = $chatbot->prompt(
+                $message,
+                provider: Lab::Gemini,
+                model: config('ai.providers.gemini.models.text.default', 'gemini-2.0-flash'),
+                timeout: 30,
+            );
 
-        if ($response->failed()) {
+            return $response->text;
+        } catch (Throwable) {
             return null;
         }
-
-        return $response->json('candidates.0.content.parts.0.text');
-    }
-
-    private function endpoint(): string
-    {
-        return sprintf(
-            'https://generativelanguage.googleapis.com/v1beta/models/%s:generateContent',
-            config('services.gemini.model', 'gemini-2.0-flash')
-        );
     }
 }

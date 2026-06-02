@@ -1,29 +1,29 @@
 <?php
 
+use App\Ai\Agents\AdminChatbotAgent;
 use App\Models\User;
-use Illuminate\Http\Client\Request;
-use Illuminate\Support\Facades\Http;
+use Laravel\Ai\Prompts\AgentPrompt;
+
+test('admin chatbot returns a configuration message when api key is missing', function () {
+    $admin = User::factory()->admin()->create();
+
+    config()->set('ai.providers.gemini.key', null);
+
+    $this->actingAs($admin)
+        ->postJson(route('chatbot.send'), [
+            'message' => 'Kiểm tra trạng thái',
+        ])
+        ->assertOk()
+        ->assertJsonPath('reply', 'Trợ lý quản trị hiện chưa được cấu hình. Vui lòng kiểm tra cấu hình hệ thống.');
+});
 
 test('admin chatbot sends messages to gemini', function () {
     $admin = User::factory()->admin()->create();
 
-    config()->set('services.gemini.api_key', 'test-gemini-key');
-    config()->set('services.gemini.model', 'gemini-test-model');
+    config()->set('ai.providers.gemini.key', 'test-gemini-key');
+    config()->set('ai.providers.gemini.models.text.default', 'gemini-test-model');
 
-    Http::preventStrayRequests();
-    Http::fake([
-        'generativelanguage.googleapis.com/*' => Http::response([
-            'candidates' => [
-                [
-                    'content' => [
-                        'parts' => [
-                            ['text' => 'Admin Gemini reply'],
-                        ],
-                    ],
-                ],
-            ],
-        ]),
-    ]);
+    AdminChatbotAgent::fake(['Admin Gemini reply'])->preventStrayPrompts();
 
     $this->actingAs($admin)
         ->postJson(route('chatbot.send'), [
@@ -32,9 +32,8 @@ test('admin chatbot sends messages to gemini', function () {
         ->assertOk()
         ->assertJsonPath('reply', 'Admin Gemini reply');
 
-    Http::assertSent(function (Request $request): bool {
-        return $request->url() === 'https://generativelanguage.googleapis.com/v1beta/models/gemini-test-model:generateContent'
-            && $request->hasHeader('x-goog-api-key', 'test-gemini-key')
-            && $request['contents'][0]['role'] === 'user';
+    AdminChatbotAgent::assertPrompted(function (AgentPrompt $prompt): bool {
+        return $prompt->prompt === 'Kiểm tra trạng thái thanh toán'
+            && $prompt->model === 'gemini-test-model';
     });
 });

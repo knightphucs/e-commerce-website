@@ -1,10 +1,11 @@
 <?php
 
-use Illuminate\Http\Client\Request;
-use Illuminate\Support\Facades\Http;
+use App\Ai\Agents\CustomerChatbotAgent;
+use Laravel\Ai\Messages\Message;
+use Laravel\Ai\Prompts\AgentPrompt;
 
 test('customer chatbot returns a configuration message when api key is missing', function () {
-    config()->set('services.gemini.api_key', null);
+    config()->set('ai.providers.gemini.key', null);
 
     $this->postJson(route('customer-chatbot.send'), [
         'message' => 'Tôi muốn hỏi về thanh toán',
@@ -14,23 +15,10 @@ test('customer chatbot returns a configuration message when api key is missing',
 });
 
 test('customer chatbot sends messages to gemini', function () {
-    config()->set('services.gemini.api_key', 'test-gemini-key');
-    config()->set('services.gemini.model', 'gemini-test-model');
+    config()->set('ai.providers.gemini.key', 'test-gemini-key');
+    config()->set('ai.providers.gemini.models.text.default', 'gemini-test-model');
 
-    Http::preventStrayRequests();
-    Http::fake([
-        'generativelanguage.googleapis.com/*' => Http::response([
-            'candidates' => [
-                [
-                    'content' => [
-                        'parts' => [
-                            ['text' => 'Gemini reply'],
-                        ],
-                    ],
-                ],
-            ],
-        ]),
-    ]);
+    CustomerChatbotAgent::fake(['Gemini reply'])->preventStrayPrompts();
 
     $this->postJson(route('customer-chatbot.send'), [
         'message' => 'Tôi muốn hỏi về thanh toán',
@@ -41,10 +29,10 @@ test('customer chatbot sends messages to gemini', function () {
         ->assertOk()
         ->assertJsonPath('reply', 'Gemini reply');
 
-    Http::assertSent(function (Request $request): bool {
-        return $request->url() === 'https://generativelanguage.googleapis.com/v1beta/models/gemini-test-model:generateContent'
-            && $request->hasHeader('x-goog-api-key', 'test-gemini-key')
-            && $request['contents'][0]['role'] === 'model'
-            && $request['contents'][1]['role'] === 'user';
+    CustomerChatbotAgent::assertPrompted(function (AgentPrompt $prompt): bool {
+        return $prompt->prompt === 'Tôi muốn hỏi về thanh toán'
+            && $prompt->model === 'gemini-test-model'
+            && $prompt->agent->messages()->contains(fn (Message $message): bool => $message->role->value === 'assistant'
+                && $message->content === 'Xin chào');
     });
 });
