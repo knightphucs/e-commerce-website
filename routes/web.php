@@ -39,21 +39,29 @@ Route::middleware(['auth'])->group(function () {
         ->only(['index', 'create', 'store', 'edit', 'update'])
         ->middleware('admin');
 
-    // Category management - Editor+
-    Route::resource('categories', CategoryController::class)->middleware('editor');
-
-    // Product management - Editor+
-    Route::resource('products', ProductController::class)->middleware('editor');
-    Route::delete('products/images/{image}', [ProductController::class, 'destroyImage'])
+    // Category management - Editor+, gated per-action by granular permission
+    Route::resource('categories', CategoryController::class)
         ->middleware('editor')
+        ->middlewareFor(['index', 'show'], 'can:categories.view')
+        ->middlewareFor(['create', 'store', 'edit', 'update'], 'can:categories.manage')
+        ->middlewareFor('destroy', 'can:categories.delete');
+
+    // Product management - Editor+, gated per-action by granular permission
+    Route::resource('products', ProductController::class)
+        ->middleware('editor')
+        ->middlewareFor(['index', 'show'], 'can:products.view')
+        ->middlewareFor(['create', 'store', 'edit', 'update'], 'can:products.manage')
+        ->middlewareFor('destroy', 'can:products.delete');
+    Route::delete('products/images/{image}', [ProductController::class, 'destroyImage'])
+        ->middleware(['editor', 'can:products.manage'])
         ->name('products.images.destroy');
 
-    // Order management - Editor+
+    // Order management - Editor+, gated per-action by granular permission
     Route::middleware('editor')->group(function () {
-        Route::get('orders', [OrderController::class, 'index'])->name('orders.index');
-        Route::get('orders/{order}', [OrderController::class, 'show'])->name('orders.show');
-        Route::patch('orders/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.updateStatus');
-        Route::patch('orders/{order}/payment-status', [OrderController::class, 'updatePaymentStatus'])->name('orders.updatePaymentStatus');
+        Route::get('orders', [OrderController::class, 'index'])->middleware('can:orders.view')->name('orders.index');
+        Route::get('orders/{order}', [OrderController::class, 'show'])->middleware('can:orders.view')->name('orders.show');
+        Route::patch('orders/{order}/status', [OrderController::class, 'updateStatus'])->middleware('can:orders.updateStatus')->name('orders.updateStatus');
+        Route::patch('orders/{order}/payment-status', [OrderController::class, 'updatePaymentStatus'])->middleware('can:orders.updatePayment')->name('orders.updatePaymentStatus');
         Route::post('chatbot/message', [ChatbotController::class, 'send'])->name('chatbot.send');
     });
 });

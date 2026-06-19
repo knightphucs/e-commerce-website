@@ -35,15 +35,17 @@
                     </a>
                 @endif
             </form>
-            <a href="{{ route('products.create') }}"
-                class="inline-flex items-center gap-2 rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="12" y1="5" x2="12" y2="19" />
-                    <line x1="5" y1="12" x2="19" y2="12" />
-                </svg>
-                Thêm sản phẩm
-            </a>
+            @can('products.manage')
+                <a href="{{ route('products.create') }}"
+                    class="inline-flex items-center gap-2 rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="5" x2="12" y2="19" />
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                    </svg>
+                    Thêm sản phẩm
+                </a>
+            @endcan
         </div>
 
         {{-- Table --}}
@@ -120,19 +122,23 @@
                                 </td>
                                 <td class="px-5 py-4">
                                     <div class="flex items-center gap-2">
-                                        <a href="{{ route('products.edit', $product) }}"
-                                            class="inline-flex items-center rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400">
-                                            Sửa
-                                        </a>
-                                        <form action="{{ route('products.destroy', $product) }}" method="POST"
-                                            onsubmit="return confirm('Bạn có chắc muốn xóa sản phẩm này?')">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit"
-                                                class="inline-flex items-center rounded-lg border border-red-300 bg-white px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50 dark:border-red-700 dark:bg-transparent dark:text-red-400">
-                                                Xóa
-                                            </button>
-                                        </form>
+                                        @can('products.manage')
+                                            <a href="{{ route('products.edit', $product) }}"
+                                                class="inline-flex items-center rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400">
+                                                Sửa
+                                            </a>
+                                        @endcan
+                                        @can('products.delete')
+                                            <form action="{{ route('products.destroy', $product) }}" method="POST"
+                                                onsubmit="return confirm('Bạn có chắc muốn xóa sản phẩm này?')">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit"
+                                                    class="inline-flex items-center rounded-lg border border-red-300 bg-white px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50 dark:border-red-700 dark:bg-transparent dark:text-red-400">
+                                                    Xóa
+                                                </button>
+                                            </form>
+                                        @endcan
                                     </div>
                                 </td>
                             </tr>

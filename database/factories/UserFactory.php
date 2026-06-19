@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Permission;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
@@ -41,7 +42,10 @@ class UserFactory extends Factory
 
     public function editor(): static
     {
-        return $this->state(fn (array $attributes) => ['role' => 'editor']);
+        return $this->state(fn (array $attributes) => ['role' => 'editor'])
+            ->afterCreating(function (User $user): void {
+                $user->permissions()->sync(Permission::pluck('id'));
+            });
     }
 
     public function unverified(): static

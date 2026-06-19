@@ -76,26 +76,28 @@
                 </div>
 
                 {{-- Update Status --}}
-                <div class="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
-                    <h3 class="mb-4 font-medium text-gray-800 dark:text-white/90">Cập nhật trạng thái</h3>
-                    <form action="{{ route('orders.updateStatus', $order) }}" method="POST" class="flex flex-wrap items-end gap-4">
-                        @csrf
-                        @method('PATCH')
-                        <div class="flex-1">
-                            <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">Trạng thái mới</label>
-                            <select name="status"
-                                class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm focus:border-brand-500 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white">
-                                @foreach ($statuses as $value => $label)
-                                    <option value="{{ $value }}" @selected($order->status === $value)>{{ $label }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <button type="submit"
-                            class="rounded-lg bg-brand-500 px-5 py-2.5 text-sm font-medium text-white hover:bg-brand-600">
-                            Cập nhật & Gửi email
-                        </button>
-                    </form>
-                </div>
+                @can('orders.updateStatus')
+                    <div class="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
+                        <h3 class="mb-4 font-medium text-gray-800 dark:text-white/90">Cập nhật trạng thái</h3>
+                        <form action="{{ route('orders.updateStatus', $order) }}" method="POST" class="flex flex-wrap items-end gap-4">
+                            @csrf
+                            @method('PATCH')
+                            <div class="flex-1">
+                                <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">Trạng thái mới</label>
+                                <select name="status"
+                                    class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm focus:border-brand-500 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white">
+                                    @foreach ($statuses as $value => $label)
+                                        <option value="{{ $value }}" @selected($order->status === $value)>{{ $label }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <button type="submit"
+                                class="rounded-lg bg-brand-500 px-5 py-2.5 text-sm font-medium text-white hover:bg-brand-600">
+                                Cập nhật & Gửi email
+                            </button>
+                        </form>
+                    </div>
+                @endcan
             </div>
 
             {{-- Right: Customer Info & Order Summary --}}
@@ -184,26 +186,28 @@
                         </div>
                     </div>
 
-                    <form action="{{ route('orders.updatePaymentStatus', $order) }}" method="POST"
-                        class="mt-4 space-y-3 border-t border-gray-100 pt-4 dark:border-gray-700">
-                        @csrf
-                        @method('PATCH')
-                        <div>
-                            <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                                Cập nhật trạng thái thanh toán
-                            </label>
-                            <select name="payment_status"
-                                class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm focus:border-brand-500 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white">
-                                @foreach ($paymentStatuses as $value => $label)
-                                    <option value="{{ $value }}" @selected($order->payment_status === $value)>{{ $label }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <button type="submit"
-                            class="w-full rounded-lg bg-brand-500 py-2.5 text-sm font-medium text-white hover:bg-brand-600">
-                            Cập nhật thanh toán
-                        </button>
-                    </form>
+                    @can('orders.updatePayment')
+                        <form action="{{ route('orders.updatePaymentStatus', $order) }}" method="POST"
+                            class="mt-4 space-y-3 border-t border-gray-100 pt-4 dark:border-gray-700">
+                            @csrf
+                            @method('PATCH')
+                            <div>
+                                <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                                    Cập nhật trạng thái thanh toán
+                                </label>
+                                <select name="payment_status"
+                                    class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm focus:border-brand-500 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white">
+                                    @foreach ($paymentStatuses as $value => $label)
+                                        <option value="{{ $value }}" @selected($order->payment_status === $value)>{{ $label }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <button type="submit"
+                                class="w-full rounded-lg bg-brand-500 py-2.5 text-sm font-medium text-white hover:bg-brand-600">
+                                Cập nhật thanh toán
+                            </button>
+                        </form>
+                    @endcan
                 </div>
 
                 <a href="{{ route('orders.index') }}"

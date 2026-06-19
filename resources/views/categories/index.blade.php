@@ -28,15 +28,17 @@
                     </a>
                 @endif
             </form>
-            <a href="{{ route('categories.create') }}"
-                class="inline-flex items-center gap-2 rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="12" y1="5" x2="12" y2="19" />
-                    <line x1="5" y1="12" x2="19" y2="12" />
-                </svg>
-                Thêm danh mục
-            </a>
+            @can('categories.manage')
+                <a href="{{ route('categories.create') }}"
+                    class="inline-flex items-center gap-2 rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="5" x2="12" y2="19" />
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                    </svg>
+                    Thêm danh mục
+                </a>
+            @endcan
         </div>
 
         {{-- Table --}}
@@ -90,19 +92,23 @@
                                 </td>
                                 <td class="px-5 py-4">
                                     <div class="flex items-center gap-2">
-                                        <a href="{{ route('categories.edit', $category) }}"
-                                            class="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-theme-xs transition hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03]">
-                                            Sửa
-                                        </a>
-                                        <form action="{{ route('categories.destroy', $category) }}" method="POST"
-                                            onsubmit="return confirm('Bạn có chắc muốn xóa danh mục này?')">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit"
-                                                class="inline-flex items-center justify-center rounded-lg border border-red-300 bg-white px-3 py-2 text-sm font-medium text-red-600 shadow-theme-xs transition hover:bg-red-50 dark:border-red-700 dark:bg-transparent dark:text-red-400">
-                                                Xóa
-                                            </button>
-                                        </form>
+                                        @can('categories.manage')
+                                            <a href="{{ route('categories.edit', $category) }}"
+                                                class="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-theme-xs transition hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03]">
+                                                Sửa
+                                            </a>
+                                        @endcan
+                                        @can('categories.delete')
+                                            <form action="{{ route('categories.destroy', $category) }}" method="POST"
+                                                onsubmit="return confirm('Bạn có chắc muốn xóa danh mục này?')">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit"
+                                                    class="inline-flex items-center justify-center rounded-lg border border-red-300 bg-white px-3 py-2 text-sm font-medium text-red-600 shadow-theme-xs transition hover:bg-red-50 dark:border-red-700 dark:bg-transparent dark:text-red-400">
+                                                    Xóa
+                                                </button>
+                                            </form>
+                                        @endcan
                                     </div>
                                 </td>
                             </tr>
