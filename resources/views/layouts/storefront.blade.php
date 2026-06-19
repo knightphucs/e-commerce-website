@@ -55,29 +55,57 @@
             @open-checkout-auth-modal.window="isOpen = true" @keydown.escape.window="isOpen = false"
             class="fixed inset-0 z-[60] flex items-center justify-center bg-gray-900/50 px-4 py-6">
             <div class="absolute inset-0" @click="isOpen = false"></div>
-            <section x-show="isOpen" x-transition class="relative w-full max-w-md rounded-lg bg-white p-6 shadow-xl">
-                <button type="button" @click="isOpen = false"
-                    class="absolute top-3 right-3 rounded-lg p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
-                    aria-label="Đóng">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
-                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M18 6 6 18" />
-                        <path d="m6 6 12 12" />
-                    </svg>
-                </button>
+            <section
+                x-show="isOpen"
+                x-transition
+                class="relative w-full max-w-md rounded-lg bg-white p-6 shadow-xl"
+            >
+                <div class="flex items-start justify-between gap-4">
+                    <div>
+                        <h2 class="text-xl font-semibold text-gray-900">
+                            Đăng ký để đặt hàng
+                        </h2>
 
-                <h2 class="text-xl font-semibold text-gray-900">Đăng ký để đặt hàng</h2>
-                <p class="mt-2 text-sm text-gray-600">
-                    Bạn cần đăng nhập hoặc tạo tài khoản trước khi thanh toán.
-                </p>
+                        <p class="mt-2 text-sm text-gray-600">
+                            Bạn cần đăng nhập hoặc tạo tài khoản trước khi thanh toán.
+                        </p>
+                    </div>
+
+                    <button
+                        type="button"
+                        @click="isOpen = false"
+                        class="shrink-0 rounded-lg p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+                        aria-label="Đóng"
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="18"
+                            height="18"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        >
+                            <path d="M18 6 6 18" />
+                            <path d="m6 6 12 12" />
+                        </svg>
+                    </button>
+                </div>
 
                 <div class="mt-6 grid gap-3 sm:grid-cols-2">
-                    <a href="{{ route('register', ['redirect_to' => route('checkout.create', absolute: false)]) }}"
-                        class="rounded-lg bg-gray-900 px-4 py-3 text-center text-sm font-medium text-white hover:bg-gray-800">
+                    <a
+                        href="{{ route('register', ['redirect_to' => route('checkout.create', absolute: false)]) }}"
+                        class="rounded-lg bg-gray-900 px-4 py-3 text-center text-sm font-medium text-white hover:bg-gray-800"
+                    >
                         Đăng ký
                     </a>
-                    <a href="{{ route('login', ['redirect_to' => route('checkout.create', absolute: false)]) }}"
-                        class="rounded-lg border border-gray-300 px-4 py-3 text-center text-sm font-medium text-gray-700 hover:bg-gray-50">
+
+                    <a
+                        href="{{ route('login', ['redirect_to' => route('checkout.create', absolute: false)]) }}"
+                        class="rounded-lg border border-gray-300 px-4 py-3 text-center text-sm font-medium text-gray-700 hover:bg-gray-50"
+                    >
                         Đăng nhập
                     </a>
                 </div>
