@@ -3,11 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreCheckoutRequest;
+use App\Mail\OrderPlaced;
 use App\Models\Order;
 use App\Models\Product;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
@@ -86,6 +88,8 @@ class CheckoutController extends Controller
 
         session()->forget('cart');
 
+        Mail::to($order->customer_email)->queue(new OrderPlaced($order));
+
         if ($order->payment_method === 'vnpay') {
             return redirect()->route('payment.checkout', ['order' => $order->tracking_code]);
         }
@@ -96,7 +100,7 @@ class CheckoutController extends Controller
 
     public function show(Order $order): View
     {
-        $order->load('items.product');
+        $order->load('items.product', 'statusHistories');
 
         return view('checkout.show', compact('order'));
     }

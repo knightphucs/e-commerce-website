@@ -27,6 +27,8 @@ class VNPayService
         $txnRef = $order->id.'_'.time();
         $order->update(['vnpay_txn_ref' => $txnRef]);
 
+        $createDate = now('Asia/Ho_Chi_Minh');
+
         $params = [
             'vnp_Version' => '2.1.0',
             'vnp_Command' => 'pay',
@@ -35,11 +37,12 @@ class VNPayService
             'vnp_CurrCode' => 'VND',
             'vnp_TxnRef' => $txnRef,
             'vnp_OrderInfo' => 'Thanh toan don hang #'.$order->id,
-            'vnp_OrderType' => 'billpayment',
+            'vnp_OrderType' => 'other',
             'vnp_Locale' => 'vn',
             'vnp_ReturnUrl' => $this->returnUrl,
             'vnp_IpAddr' => $ipAddr,
-            'vnp_CreateDate' => now()->format('YmdHis'),
+            'vnp_CreateDate' => $createDate->format('YmdHis'),
+            'vnp_ExpireDate' => $createDate->copy()->addMinutes(15)->format('YmdHis'),
         ];
 
         ksort($params);

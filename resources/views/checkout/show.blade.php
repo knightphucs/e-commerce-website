@@ -16,6 +16,24 @@
                     </div>
                 @endforeach
             </div>
+
+            <div class="mt-8">
+                <p class="mb-4 text-sm font-medium text-gray-700">Hành trình đơn hàng</p>
+                <ol class="space-y-5">
+                    @foreach ($order->statusHistories as $history)
+                        <li class="relative flex gap-3 pl-1">
+                            @unless ($loop->last)
+                                <span class="absolute top-5 left-[7px] h-full w-px bg-gray-200"></span>
+                            @endunless
+                            <span class="mt-1.5 h-3.5 w-3.5 shrink-0 rounded-full {{ $loop->last ? 'bg-gray-900' : 'bg-gray-300' }}"></span>
+                            <div>
+                                <p class="text-sm font-medium text-gray-900">{{ $history->statusLabel() }}</p>
+                                <p class="text-xs text-gray-500">{{ $history->paymentStatusLabel() }} · {{ $history->created_at->format('H:i d/m/Y') }}</p>
+                            </div>
+                        </li>
+                    @endforeach
+                </ol>
+            </div>
         </section>
         <aside class="h-fit rounded-lg border border-gray-200 bg-white p-5">
             <div class="space-y-3 text-sm">

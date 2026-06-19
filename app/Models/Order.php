@@ -47,6 +47,32 @@ class Order extends Model
         return $this->hasMany(OrderItem::class);
     }
 
+    public function statusHistories(): HasMany
+    {
+        return $this->hasMany(OrderStatusHistory::class)->oldest();
+    }
+
+    protected static function booted(): void
+    {
+        static::created(function (Order $order): void {
+            $order->refresh();
+
+            $order->statusHistories()->create([
+                'status' => $order->status,
+                'payment_status' => $order->payment_status,
+            ]);
+        });
+
+        static::updated(function (Order $order): void {
+            if ($order->wasChanged(['status', 'payment_status'])) {
+                $order->statusHistories()->create([
+                    'status' => $order->status,
+                    'payment_status' => $order->payment_status,
+                ]);
+            }
+        });
+    }
+
     public function statusLabel(): string
     {
         return match ($this->status) {

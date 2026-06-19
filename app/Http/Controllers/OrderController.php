@@ -36,7 +36,7 @@ class OrderController extends Controller
 
     public function show(Order $order): View
     {
-        $order->load('items.product');
+        $order->load('items.product', 'statusHistories');
 
         $statuses = [
             'pending' => 'Chờ xác nhận',

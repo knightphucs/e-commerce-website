@@ -1,8 +1,14 @@
 <?php
 
+use App\Mail\OrderPlaced;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
+use Illuminate\Support\Facades\Mail;
+
+beforeEach(function () {
+    Mail::fake();
+});
 
 test('customer can place a cod order from cart', function () {
     $product = Product::factory()->create(['price' => 150000, 'stock' => 3]);
@@ -28,6 +34,8 @@ test('customer can place a cod order from cart', function () {
         ->and($order->payment_status)->toBe('unpaid')
         ->and($order->items)->toHaveCount(1)
         ->and($product->fresh()->stock)->toBe(1);
+
+    Mail::assertQueued(OrderPlaced::class, fn ($mail) => $mail->hasTo($order->customer_email));
 });
 
 test('customer is redirected to vnpay checkout after choosing online payment', function () {
@@ -53,6 +61,8 @@ test('customer is redirected to vnpay checkout after choosing online payment', f
     $order = Order::firstOrFail();
 
     $response->assertRedirect(route('payment.checkout', ['order' => $order->tracking_code]));
+
+    Mail::assertQueued(OrderPlaced::class, fn ($mail) => $mail->hasTo($order->customer_email));
 });
 
 test('checkout rejects insufficient stock', function () {

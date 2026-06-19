@@ -58,7 +58,9 @@ Route::middleware(['auth'])->group(function () {
     });
 });
 
-// VNPay callback (no auth needed - VNPay sends back to this URL)
+// VNPay browser return (no auth needed - VNPay redirects the customer here)
 Route::get('payment/callback', [PaymentController::class, 'callback'])->name('payment.callback');
+// VNPay IPN (no auth needed - VNPay calls this server-to-server; register it in the merchant portal)
+Route::get('payment/ipn', [PaymentController::class, 'ipn'])->name('payment.ipn');
 
 require __DIR__.'/auth.php';

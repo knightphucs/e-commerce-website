@@ -118,6 +118,25 @@
                     <p class="mt-2 text-xs text-gray-400">Đặt lúc: {{ $order->created_at->format('H:i d/m/Y') }}</p>
                 </div>
 
+                {{-- Status Timeline --}}
+                <div class="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
+                    <h3 class="mb-4 font-medium text-gray-800 dark:text-white/90">Lịch sử trạng thái</h3>
+                    <ol class="space-y-4">
+                        @foreach ($order->statusHistories as $history)
+                            <li class="relative flex gap-3 pl-1">
+                                @unless ($loop->last)
+                                    <span class="absolute top-5 left-[7px] h-full w-px bg-gray-200 dark:bg-gray-700"></span>
+                                @endunless
+                                <span class="mt-1.5 h-3.5 w-3.5 shrink-0 rounded-full {{ $loop->last ? 'bg-brand-500' : 'bg-gray-300 dark:bg-gray-600' }}"></span>
+                                <div>
+                                    <p class="text-sm font-medium text-gray-800 dark:text-white/90">{{ $history->statusLabel() }}</p>
+                                    <p class="text-xs text-gray-400">{{ $history->paymentStatusLabel() }} · {{ $history->created_at->format('H:i d/m/Y') }}</p>
+                                </div>
+                            </li>
+                        @endforeach
+                    </ol>
+                </div>
+
                 {{-- Customer Info --}}
                 <div class="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
                     <h3 class="mb-4 font-medium text-gray-800 dark:text-white/90">Thông tin khách hàng</h3>
