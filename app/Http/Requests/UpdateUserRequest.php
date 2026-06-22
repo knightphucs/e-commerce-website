@@ -24,12 +24,26 @@ class UpdateUserRequest extends FormRequest
      */
     public function rules(): array
     {
+        if ($this->isEditingSelf()) {
+            return [
+                'name' => ['required', 'string', 'max:255'],
+                'email' => ['required', 'email', 'max:255', Rule::unique(User::class)->ignore($this->route('user')->id)],
+            ];
+        }
+
         return [
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255', Rule::unique(User::class)->ignore($this->user->id)],
             'role' => ['required', 'in:admin,editor,customer'],
+            'status' => ['required', 'in:active,blocked'],
             'permissions' => ['array'],
             'permissions.*' => ['integer', 'exists:permissions,id'],
         ];
+    }
+
+    /**
+     * Determine whether the admin is editing their own account.
+     */
+    public function isEditingSelf(): bool
+    {
+        return $this->route('user')->is($this->user());
     }
 }

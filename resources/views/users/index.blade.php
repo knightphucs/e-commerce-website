@@ -40,6 +40,9 @@
                                 <p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">Quyền</p>
                             </th>
                             <th class="px-5 py-3 text-left sm:px-6">
+                                <p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">Status</p>
+                            </th>
+                            <th class="px-5 py-3 text-left sm:px-6">
                                 <p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">Created At</p>
                             </th>
                             <th class="px-5 py-3 text-left sm:px-6">
@@ -75,6 +78,17 @@
                                         </div>
                                     @else
                                         <span class="text-xs text-gray-400">—</span>
+                                    @endif
+                                </td>
+                                <td class="px-5 py-4 sm:px-6">
+                                    @if ($user->status === 'active')
+                                        <span class="inline-flex items-center rounded-full bg-success-50 px-2 py-0.5 text-xs font-medium text-success-700 dark:bg-success-500/15 dark:text-success-400">
+                                            Active
+                                        </span>
+                                    @else
+                                        <span class="inline-flex items-center rounded-full bg-red-50 px-2 py-0.5 text-xs font-medium text-red-700 dark:bg-red-500/15 dark:text-red-400">
+                                            Blocked
+                                        </span>
                                     @endif
                                 </td>
                                 <td class="px-5 py-4 sm:px-6">
@@ -118,7 +132,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="px-5 py-8 text-center">
+                                <td colspan="8" class="px-5 py-8 text-center">
                                     <p class="text-gray-500 dark:text-gray-400">No users found.</p>
                                 </td>
                             </tr>

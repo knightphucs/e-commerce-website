@@ -39,6 +39,14 @@ class LoginController extends Controller
             ]);
         }
 
+        if (Auth::user()->isBlocked()) {
+            Auth::logout();
+
+            throw ValidationException::withMessages([
+                'email' => 'Tài khoản của bạn đã bị khóa.',
+            ]);
+        }
+
         RateLimiter::clear($this->throttleKey($request));
 
         $request->session()->regenerate();

@@ -53,8 +53,12 @@ class UserController extends Controller
      */
     public function update(UpdateUserRequest $request, User $user): RedirectResponse
     {
-        $user->update($request->safe()->except('permissions'));
-        $user->permissions()->sync($request->validated('permissions', []));
+        if ($request->isEditingSelf()) {
+            $user->update($request->safe()->only(['name', 'email']));
+        } else {
+            $user->update($request->safe()->only(['role', 'status']));
+            $user->permissions()->sync($request->validated('permissions', []));
+        }
 
         return redirect()->route('users.index')->with('success', 'User updated successfully');
     }

@@ -7,6 +7,7 @@ use App\Http\Requests\UpdateProductRequest;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\ProductImage;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -16,18 +17,49 @@ use Illuminate\View\View;
 
 class ProductController extends Controller
 {
+    private const SORTABLE_COLUMNS = ['price', 'stock', 'created_at'];
+
     public function index(Request $request): View
     {
-        $products = Product::with(['category', 'primaryImage'])
-            ->when($request->search, fn ($q) => $q->where('name', 'like', "%{$request->search}%"))
-            ->when($request->category_id, fn ($q) => $q->where('category_id', $request->category_id))
-            ->latest()
+        $products = $this->filteredProducts($request)
             ->paginate(15)
             ->withQueryString();
 
         $categories = Category::where('status', 'active')->orderBy('name')->get();
 
         return view('products.index', compact('products', 'categories'));
+    }
+
+    private function filteredProducts(Request $request): Builder
+    {
+        return Product::with(['category', 'primaryImage'])
+            ->when($request->search, fn ($q) => $q->where('name', 'like', "%{$request->search}%"))
+            ->when($request->category_id, fn ($q) => $q->where('category_id', $request->category_id))
+            ->when($request->status, fn ($q) => $q->where('status', $request->status))
+            ->when($request->stock_status, fn ($q) => $this->applyStockFilter($q, $request->stock_status))
+            ->when($request->price_min, fn ($q) => $q->where('price', '>=', $request->price_min))
+            ->when($request->price_max, fn ($q) => $q->where('price', '<=', $request->price_max))
+            ->orderBy(...$this->resolveSort($request));
+    }
+
+    private function applyStockFilter(Builder $query, string $stockStatus): Builder
+    {
+        return match ($stockStatus) {
+            'in_stock' => $query->where('stock', '>', 0),
+            'out_of_stock' => $query->where('stock', 0),
+            default => $query,
+        };
+    }
+
+    /**
+     * @return array{0: string, 1: string}
+     */
+    private function resolveSort(Request $request): array
+    {
+        $sortBy = in_array($request->sort_by, self::SORTABLE_COLUMNS) ? $request->sort_by : 'created_at';
+        $sortDir = $request->sort_dir === 'asc' ? 'asc' : 'desc';
+
+        return [$sortBy, $sortDir];
     }
 
     public function create(): View

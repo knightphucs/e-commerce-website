@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -33,12 +34,21 @@ class ProfileController extends Controller
                 'max:255',
                 Rule::unique(User::class)->ignore($user->id),
             ],
+            'avatar' => ['nullable', 'image', 'max:2048'],
         ]);
 
-        $user->fill($validated);
+        $user->fill(['name' => $validated['name'], 'email' => $validated['email']]);
 
         if ($user->isDirty('email')) {
             $user->email_verified_at = null;
+        }
+
+        if ($request->hasFile('avatar')) {
+            if ($user->avatar) {
+                Storage::disk('public')->delete($user->avatar);
+            }
+
+            $user->avatar = $request->file('avatar')->store('avatars', 'public');
         }
 
         $user->save();

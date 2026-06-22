@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class User extends Authenticatable
@@ -22,8 +23,10 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
+        'avatar',
         'password',
         'role',
+        'status',
     ];
 
     /**
@@ -65,6 +68,11 @@ class User extends Authenticatable
             ->implode('');
     }
 
+    public function avatarUrl(): ?string
+    {
+        return $this->avatar ? Storage::url($this->avatar) : null;
+    }
+
     public function isAdmin(): bool
     {
         return $this->role === 'admin';
@@ -73,5 +81,10 @@ class User extends Authenticatable
     public function isEditor(): bool
     {
         return in_array($this->role, ['admin', 'editor']);
+    }
+
+    public function isBlocked(): bool
+    {
+        return $this->status === 'blocked';
     }
 }

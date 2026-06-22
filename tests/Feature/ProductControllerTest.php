@@ -48,6 +48,51 @@ test('product index supports category filter', function () {
         ->assertDontSee('Product B');
 });
 
+test('product index supports status filter', function () {
+    Product::factory()->create(['name' => 'Active Product', 'slug' => 'active-product', 'status' => 'active']);
+    Product::factory()->create(['name' => 'Inactive Product', 'slug' => 'inactive-product', 'status' => 'inactive']);
+
+    $this->actingAs($this->editor)
+        ->get(route('products.index', ['status' => 'active']))
+        ->assertOk()
+        ->assertSee('Active Product')
+        ->assertDontSee('Inactive Product');
+});
+
+test('product index supports stock status filter', function () {
+    Product::factory()->create(['name' => 'In Stock Product', 'slug' => 'in-stock-product', 'stock' => 5]);
+    Product::factory()->create(['name' => 'Out Of Stock Product', 'slug' => 'out-of-stock-product', 'stock' => 0]);
+
+    $this->actingAs($this->editor)
+        ->get(route('products.index', ['stock_status' => 'out_of_stock']))
+        ->assertOk()
+        ->assertSee('Out Of Stock Product')
+        ->assertDontSee('In Stock Product');
+});
+
+test('product index supports price range filter', function () {
+    Product::factory()->create(['name' => 'Cheap Product', 'slug' => 'cheap-product', 'price' => 100000]);
+    Product::factory()->create(['name' => 'Expensive Product', 'slug' => 'expensive-product', 'price' => 900000]);
+
+    $this->actingAs($this->editor)
+        ->get(route('products.index', ['price_min' => 500000]))
+        ->assertOk()
+        ->assertSee('Expensive Product')
+        ->assertDontSee('Cheap Product');
+});
+
+test('product index supports sorting by price', function () {
+    $cheap = Product::factory()->create(['name' => 'Cheap Product', 'slug' => 'cheap-product', 'price' => 100000]);
+    $expensive = Product::factory()->create(['name' => 'Expensive Product', 'slug' => 'expensive-product', 'price' => 900000]);
+
+    $response = $this->actingAs($this->editor)
+        ->get(route('products.index', ['sort_by' => 'price', 'sort_dir' => 'asc']));
+
+    $response->assertOk();
+    $ids = $response->viewData('products')->pluck('id')->all();
+    expect($ids)->toBe([$cheap->id, $expensive->id]);
+});
+
 // ------- Create -------
 
 test('editor can view create product form', function () {

@@ -19,9 +19,29 @@
             </div>
         @endif
 
-        <form method="POST" action="{{ route('settings.profile.update') }}" class="space-y-6">
+        <form method="POST" action="{{ route('settings.profile.update') }}" class="space-y-6" enctype="multipart/form-data">
             @csrf
             @method('PUT')
+
+            <!-- Avatar -->
+            <div>
+                <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">Avatar</label>
+                <div class="flex items-center gap-4">
+                    @if ($user->avatar)
+                        <img src="{{ $user->avatarUrl() }}" alt="{{ $user->name }}"
+                            class="h-16 w-16 rounded-full object-cover">
+                    @else
+                        <span class="flex h-16 w-16 items-center justify-center rounded-full bg-gray-200 text-lg font-medium text-black dark:bg-gray-700 dark:text-white">
+                            {{ $user->initials() }}
+                        </span>
+                    @endif
+                    <input type="file" name="avatar" accept="image/*"
+                        class="block w-full text-sm text-gray-700 file:mr-4 file:rounded-lg file:border-0 file:bg-brand-500 file:px-4 file:py-2 file:text-sm file:font-medium file:text-white hover:file:bg-brand-600 dark:text-gray-400">
+                </div>
+                @error('avatar')
+                    <p class="mt-1.5 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                @enderror
+            </div>
 
             <!-- Name Input -->
             <div>

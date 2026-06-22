@@ -37,9 +37,8 @@ test('admin can update a user permissions', function () {
 
     $this->actingAs($this->admin)
         ->put(route('users.update', $user), [
-            'name' => $user->name,
-            'email' => $user->email,
             'role' => 'editor',
+            'status' => 'active',
             'permissions' => [$manage->id],
         ])
         ->assertRedirect(route('users.index'));

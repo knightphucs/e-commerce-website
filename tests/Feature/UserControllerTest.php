@@ -36,14 +36,60 @@ test('admin can update a user role', function () {
 
     $this->actingAs($this->admin)
         ->put(route('users.update', $user), [
-            'name' => $user->name,
-            'email' => $user->email,
             'role' => 'editor',
+            'status' => 'active',
         ])
         ->assertRedirect(route('users.index'))
         ->assertSessionHas('success');
 
     expect($user->fresh()->role)->toBe('editor');
+});
+
+test('admin cannot change another user\'s name or email', function () {
+    $user = User::factory()->create(['name' => 'Original Name', 'email' => 'original@example.com']);
+
+    $this->actingAs($this->admin)
+        ->put(route('users.update', $user), [
+            'name' => 'Hacked Name',
+            'email' => 'hacked@example.com',
+            'role' => $user->role,
+            'status' => 'active',
+        ])
+        ->assertRedirect(route('users.index'));
+
+    expect($user->fresh())
+        ->name->toBe('Original Name')
+        ->email->toBe('original@example.com');
+});
+
+test('admin can block another user', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($this->admin)
+        ->put(route('users.update', $user), [
+            'role' => $user->role,
+            'status' => 'blocked',
+        ])
+        ->assertRedirect(route('users.index'))
+        ->assertSessionHas('success');
+
+    expect($user->fresh()->status)->toBe('blocked');
+});
+
+test('admin can update their own name and email but not role or status', function () {
+    $this->actingAs($this->admin)
+        ->put(route('users.update', $this->admin), [
+            'name' => 'Updated Admin Name',
+            'email' => 'updated-admin@example.com',
+        ])
+        ->assertRedirect(route('users.index'))
+        ->assertSessionHas('success');
+
+    expect($this->admin->fresh())
+        ->name->toBe('Updated Admin Name')
+        ->email->toBe('updated-admin@example.com')
+        ->role->toBe('admin')
+        ->status->toBe('active');
 });
 
 // ------- Destroy -------

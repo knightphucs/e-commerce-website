@@ -12,29 +12,7 @@
         @endsession
 
         {{-- Toolbar --}}
-        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <form method="GET" class="flex flex-wrap gap-2">
-                <input type="text" name="search" value="{{ request('search') }}"
-                    placeholder="Tìm kiếm sản phẩm..."
-                    class="w-52 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm focus:border-brand-500 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
-                <select name="category_id"
-                    class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm focus:border-brand-500 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white">
-                    <option value="">Tất cả danh mục</option>
-                    @foreach ($categories as $cat)
-                        <option value="{{ $cat->id }}" @selected(request('category_id') == $cat->id)>{{ $cat->name }}</option>
-                    @endforeach
-                </select>
-                <button type="submit"
-                    class="rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600">
-                    Lọc
-                </button>
-                @if (request()->hasAny(['search', 'category_id']))
-                    <a href="{{ route('products.index') }}"
-                        class="rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-400">
-                        Xóa lọc
-                    </a>
-                @endif
-            </form>
+        <div class="flex justify-end">
             @can('products.manage')
                 <a href="{{ route('products.create') }}"
                     class="inline-flex items-center gap-2 rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600">
@@ -46,6 +24,84 @@
                     Thêm sản phẩm
                 </a>
             @endcan
+        </div>
+
+        {{-- Filters --}}
+        <div class="rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
+            <form method="GET" class="flex flex-wrap items-end gap-4">
+                <div>
+                    <label class="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">Tìm kiếm</label>
+                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Tên sản phẩm..."
+                        class="w-52 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:border-brand-500 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
+                </div>
+                <div>
+                    <label class="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">Danh mục</label>
+                    <select name="category_id"
+                        class="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:border-brand-500 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white">
+                        <option value="">Tất cả</option>
+                        @foreach ($categories as $cat)
+                            <option value="{{ $cat->id }}" @selected(request('category_id') == $cat->id)>{{ $cat->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div>
+                    <label class="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">Trạng thái</label>
+                    <select name="status"
+                        class="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:border-brand-500 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white">
+                        <option value="">Tất cả</option>
+                        <option value="active" @selected(request('status') === 'active')>Đang bán</option>
+                        <option value="inactive" @selected(request('status') === 'inactive')>Ẩn</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">Tồn kho</label>
+                    <select name="stock_status"
+                        class="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:border-brand-500 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white">
+                        <option value="">Tất cả</option>
+                        <option value="in_stock" @selected(request('stock_status') === 'in_stock')>Còn hàng</option>
+                        <option value="out_of_stock" @selected(request('stock_status') === 'out_of_stock')>Hết hàng</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">Giá từ</label>
+                    <input type="number" name="price_min" value="{{ request('price_min') }}" min="0"
+                        class="w-28 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:border-brand-500 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
+                </div>
+                <div>
+                    <label class="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">Giá đến</label>
+                    <input type="number" name="price_max" value="{{ request('price_max') }}" min="0"
+                        class="w-28 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:border-brand-500 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
+                </div>
+                <div>
+                    <label class="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">Sắp xếp theo</label>
+                    <select name="sort_by"
+                        class="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:border-brand-500 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white">
+                        <option value="created_at" @selected(request('sort_by', 'created_at') === 'created_at')>Ngày tạo</option>
+                        <option value="price" @selected(request('sort_by') === 'price')>Giá</option>
+                        <option value="stock" @selected(request('sort_by') === 'stock')>Tồn kho</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">Thứ tự</label>
+                    <select name="sort_dir"
+                        class="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:border-brand-500 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white">
+                        <option value="desc" @selected(request('sort_dir', 'desc') === 'desc')>Giảm dần</option>
+                        <option value="asc" @selected(request('sort_dir') === 'asc')>Tăng dần</option>
+                    </select>
+                </div>
+                <div class="flex gap-2">
+                    <button type="submit"
+                        class="rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600">
+                        Lọc
+                    </button>
+                    @if (request()->hasAny(['search', 'category_id', 'status', 'stock_status', 'price_min', 'price_max', 'sort_by', 'sort_dir']))
+                        <a href="{{ route('products.index') }}"
+                            class="rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-400">
+                            Xóa lọc
+                        </a>
+                    @endif
+                </div>
+            </form>
         </div>
 
         {{-- Table --}}

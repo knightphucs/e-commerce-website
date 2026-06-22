@@ -15,7 +15,11 @@
     >
         <span
             class="flex items-center justify-center text-center mr-3 overflow-hidden rounded-full h-11 w-11 bg-gray-200 text-black dark:bg-gray-700 dark:text-white">
-            {{ Auth::user()->initials() }}
+            @if (Auth::user()->avatar)
+                <img src="{{ Auth::user()->avatarUrl() }}" alt="{{ Auth::user()->name }}" class="h-full w-full object-cover">
+            @else
+                {{ Auth::user()->initials() }}
+            @endif
         </span>
 
        <span class="block mr-1 font-medium text-theme-sm">{{ Auth::user()->name }}</span>
