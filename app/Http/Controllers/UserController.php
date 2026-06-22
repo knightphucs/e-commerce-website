@@ -7,6 +7,7 @@ use App\Http\Requests\UpdateUserRequest;
 use App\Models\Permission;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class UserController extends Controller
@@ -56,5 +57,16 @@ class UserController extends Controller
         $user->permissions()->sync($request->validated('permissions', []));
 
         return redirect()->route('users.index')->with('success', 'User updated successfully');
+    }
+
+    public function destroy(Request $request, User $user): RedirectResponse
+    {
+        if ($user->is($request->user())) {
+            return redirect()->route('users.index')->with('error', 'Bạn không thể tự xóa tài khoản của chính mình.');
+        }
+
+        $user->delete();
+
+        return redirect()->route('users.index')->with('success', 'User deleted successfully');
     }
 }

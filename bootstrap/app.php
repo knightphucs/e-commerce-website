@@ -17,6 +17,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin' => EnsureUserIsAdmin::class,
             'editor' => EnsureUserIsEditor::class,
         ]);
+
+        // Trust tunnels (ngrok, sail share, etc.) and reverse proxies so that
+        // url()/route() correctly detect HTTPS and generate matching links.
+        $middleware->trustProxies(at: '*');
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

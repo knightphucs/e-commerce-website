@@ -9,6 +9,11 @@
                 {{ $value }}
             </x-ui.alert>
         @endsession
+        @session('error')
+            <x-ui.alert variant="error">
+                {{ $value }}
+            </x-ui.alert>
+        @endsession
 
         <div class="flex justify-end">
             <a href="{{ route('users.create') }}"
@@ -39,6 +44,9 @@
                             </th>
                             <th class="px-5 py-3 text-left sm:px-6">
                                 <p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">Updated At</p>
+                            </th>
+                            <th class="px-5 py-3 text-left sm:px-6">
+                                <p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">Actions</p>
                             </th>
                         </tr>
                     </thead>
@@ -86,12 +94,31 @@
                                                 <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
                                             </svg>
                                         </a>
+                                        @if (! $user->is(auth()->user()))
+                                            <form action="{{ route('users.destroy', $user) }}" method="POST"
+                                                onsubmit="return confirm('Bạn có chắc muốn xóa người dùng này?')">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit"
+                                                    class="inline-flex items-center justify-center rounded-lg border border-red-300 bg-white px-3 py-2 text-sm font-medium text-red-600 shadow-theme-xs transition hover:bg-red-50 dark:border-red-700 dark:bg-transparent dark:text-red-400">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                                        stroke-linecap="round" stroke-linejoin="round">
+                                                        <polyline points="3 6 5 6 21 6" />
+                                                        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                                                        <path d="M10 11v6" />
+                                                        <path d="M14 11v6" />
+                                                        <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+                                                    </svg>
+                                                </button>
+                                            </form>
+                                        @endif
                                     </div>
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="8" class="px-5 py-8 text-center">
+                                <td colspan="7" class="px-5 py-8 text-center">
                                     <p class="text-gray-500 dark:text-gray-400">No users found.</p>
                                 </td>
                             </tr>

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use Illuminate\Support\Facades\Log;
 use Laravel\Ai\Enums\Lab;
 use Laravel\Ai\Promptable;
 use Throwable;
@@ -31,7 +32,9 @@ class GeminiChatClient
             );
 
             return $response->text;
-        } catch (Throwable) {
+        } catch (Throwable $e) {
+            Log::error('GeminiChatClient failed', ['exception' => $e]);
+
             return null;
         }
     }

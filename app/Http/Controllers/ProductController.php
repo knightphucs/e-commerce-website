@@ -11,6 +11,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class ProductController extends Controller
@@ -38,18 +39,9 @@ class ProductController extends Controller
 
     public function store(StoreProductRequest $request): RedirectResponse
     {
-        $product = Product::create($request->safe()->except('images'));
+        $product = Product::create($request->safe()->except(['images', 'library_image_ids']));
 
-        if ($request->hasFile('images')) {
-            foreach ($request->file('images') as $index => $image) {
-                $path = $image->store('products', 'public');
-                $product->images()->create([
-                    'path' => $path,
-                    'is_primary' => $index === 0,
-                    'sort_order' => $index,
-                ]);
-            }
-        }
+        $this->attachImages($product, $request, $product->images()->count());
 
         return redirect()->route('products.index')
             ->with('success', 'Sản phẩm đã được tạo thành công.');
@@ -65,19 +57,9 @@ class ProductController extends Controller
 
     public function update(UpdateProductRequest $request, Product $product): RedirectResponse
     {
-        $product->update($request->safe()->except('images'));
+        $product->update($request->safe()->except(['images', 'library_image_ids']));
 
-        if ($request->hasFile('images')) {
-            $existingCount = $product->images()->count();
-            foreach ($request->file('images') as $index => $image) {
-                $path = $image->store('products', 'public');
-                $product->images()->create([
-                    'path' => $path,
-                    'is_primary' => $existingCount === 0 && $index === 0,
-                    'sort_order' => $existingCount + $index,
-                ]);
-            }
-        }
+        $this->attachImages($product, $request, $product->images()->count());
 
         return redirect()->route('products.index')
             ->with('success', 'Sản phẩm đã được cập nhật thành công.');
@@ -102,9 +84,55 @@ class ProductController extends Controller
         $image->delete();
 
         if ($image->is_primary) {
-            $product->images()->first()?->update(['is_primary' => true]);
+            $product?->images()->first()?->update(['is_primary' => true]);
         }
 
         return response()->json(['success' => true]);
+    }
+
+    private function attachImages(Product $product, Request $request, int $startIndex): void
+    {
+        $index = $startIndex;
+
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $image) {
+                $path = $image->store('products', 'public');
+                $product->images()->create([
+                    'path' => $path,
+                    'is_primary' => $index === 0,
+                    'sort_order' => $index,
+                ]);
+                $index++;
+            }
+        }
+
+        foreach ($request->input('library_image_ids', []) as $imageId) {
+            $source = ProductImage::findOrFail($imageId);
+
+            if ($source->product_id === null) {
+                $source->update([
+                    'product_id' => $product->id,
+                    'is_primary' => $index === 0,
+                    'sort_order' => $index,
+                ]);
+            } else {
+                $product->images()->create([
+                    'path' => $this->copyLibraryImage($source),
+                    'is_primary' => $index === 0,
+                    'sort_order' => $index,
+                ]);
+            }
+            $index++;
+        }
+    }
+
+    private function copyLibraryImage(ProductImage $source): string
+    {
+        $extension = pathinfo($source->path, PATHINFO_EXTENSION);
+        $newPath = 'products/'.Str::uuid().($extension ? ".{$extension}" : '');
+
+        Storage::disk('public')->copy($source->path, $newPath);
+
+        return $newPath;
     }
 }

@@ -1,10 +1,12 @@
 <?php
 
+use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ChatbotController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\CustomerChatbotController;
+use App\Http\Controllers\MediaController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProductController;
@@ -29,14 +31,14 @@ Route::post('customer-chatbot/message', [CustomerChatbotController::class, 'send
     ->middleware('throttle:20,1')
     ->name('customer-chatbot.send');
 
-Route::middleware(['auth'])->group(function () {
-    Route::get('/dashboard', function () {
+Route::prefix('admin')->middleware(['auth'])->group(function () {
+    Route::get('dashboard', function () {
         return view('dashboard', ['title' => 'Dashboard']);
     })->middleware('editor')->name('dashboard');
 
     // User management - Admin only
     Route::resource('users', UserController::class)
-        ->only(['index', 'create', 'store', 'edit', 'update'])
+        ->only(['index', 'create', 'store', 'edit', 'update', 'destroy'])
         ->middleware('admin');
 
     // Category management - Editor+, gated per-action by granular permission
@@ -56,6 +58,20 @@ Route::middleware(['auth'])->group(function () {
         ->middleware(['editor', 'can:products.manage'])
         ->name('products.images.destroy');
 
+    // Media library - reuses product_images, gated by the same product permissions
+    Route::get('media', [MediaController::class, 'index'])
+        ->middleware(['editor', 'can:products.view'])
+        ->name('media.index');
+    Route::post('media', [MediaController::class, 'store'])
+        ->middleware(['editor', 'can:products.manage'])
+        ->name('media.store');
+    Route::get('media/picker', [MediaController::class, 'picker'])
+        ->middleware(['editor', 'can:products.manage'])
+        ->name('media.picker');
+    Route::post('media/{image}/assign', [MediaController::class, 'assign'])
+        ->middleware(['editor', 'can:products.manage'])
+        ->name('media.assign');
+
     // Order management - Editor+, gated per-action by granular permission
     Route::middleware('editor')->group(function () {
         Route::get('orders', [OrderController::class, 'index'])->middleware('can:orders.view')->name('orders.index');
@@ -64,6 +80,8 @@ Route::middleware(['auth'])->group(function () {
         Route::patch('orders/{order}/payment-status', [OrderController::class, 'updatePaymentStatus'])->middleware('can:orders.updatePayment')->name('orders.updatePaymentStatus');
         Route::post('chatbot/message', [ChatbotController::class, 'send'])->name('chatbot.send');
     });
+
+    Route::post('logout', [LoginController::class, 'destroy'])->name('admin.logout');
 });
 
 // VNPay browser return (no auth needed - VNPay redirects the customer here)

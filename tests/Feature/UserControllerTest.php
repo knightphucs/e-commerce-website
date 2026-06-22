@@ -45,3 +45,25 @@ test('admin can update a user role', function () {
 
     expect($user->fresh()->role)->toBe('editor');
 });
+
+// ------- Destroy -------
+
+test('admin can delete a user', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($this->admin)
+        ->delete(route('users.destroy', $user))
+        ->assertRedirect(route('users.index'))
+        ->assertSessionHas('success');
+
+    $this->assertDatabaseMissing('users', ['id' => $user->id]);
+});
+
+test('admin cannot delete their own account', function () {
+    $this->actingAs($this->admin)
+        ->delete(route('users.destroy', $this->admin))
+        ->assertRedirect(route('users.index'))
+        ->assertSessionHas('error');
+
+    $this->assertDatabaseHas('users', ['id' => $this->admin->id]);
+});

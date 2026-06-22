@@ -12,7 +12,7 @@ class SearchProducts implements Tool
 {
     public function description(): Stringable|string
     {
-        return 'Tìm kiếm sản phẩm theo tên hoặc danh mục. Trả về tên, giá, tồn kho và trạng thái sản phẩm.';
+        return 'Tìm kiếm sản phẩm đang bán theo tên hoặc danh mục. Trả về ID, tên, danh mục, giá và tồn kho — dùng ID này với GetProductDetails để xem mô tả đầy đủ.';
     }
 
     public function handle(Request $request): Stringable|string
@@ -34,6 +34,7 @@ class SearchProducts implements Tool
         }
 
         return $products->map(fn (Product $product) => [
+            'id' => $product->id,
             'name' => $product->name,
             'category' => $product->category?->name ?? 'Chưa phân loại',
             'price' => $product->formattedPrice(),

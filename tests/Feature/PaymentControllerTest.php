@@ -18,7 +18,6 @@ beforeEach(function () {
     config()->set('services.vnpay.url', 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html');
     config()->set('services.vnpay.tmn_code', 'DEMO');
     config()->set('services.vnpay.hash_secret', 'secret');
-    config()->set('services.vnpay.return_url', route('payment.callback'));
     Mail::fake();
 });
 

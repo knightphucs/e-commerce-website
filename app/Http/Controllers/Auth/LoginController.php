@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -42,7 +43,15 @@ class LoginController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        $user = Auth::user();
+
+        $this->discardIntendedUrlIfWrongArea($request, $user);
+
+        $default = $user->isEditor()
+            ? route('dashboard', absolute: false)
+            : route('shop.index', absolute: false);
+
+        return redirect()->intended($default);
     }
 
     public function destroy(Request $request): RedirectResponse
@@ -53,7 +62,9 @@ class LoginController extends Controller
 
         $request->session()->regenerateToken();
 
-        return redirect('/');
+        return $request->routeIs('admin.logout')
+            ? redirect()->route('login')
+            : redirect()->route('shop.index');
     }
 
     protected function ensureIsNotRateLimited(Request $request): void
@@ -85,6 +96,21 @@ class LoginController extends Controller
 
         if (str_starts_with($redirectTo, '/') && ! str_starts_with($redirectTo, '//')) {
             $request->session()->put('url.intended', $redirectTo);
+        }
+    }
+
+    /**
+     * Drop the stored intended URL if it doesn't belong to the area the
+     * logged-in user actually has access to (e.g. an editor's intended URL
+     * was a client-only checkout page, or a customer's was an admin page).
+     */
+    private function discardIntendedUrlIfWrongArea(Request $request, User $user): void
+    {
+        $intendedPath = parse_url($request->session()->get('url.intended', ''), PHP_URL_PATH) ?? '';
+        $isAdminArea = str_starts_with($intendedPath, '/admin');
+
+        if ($isAdminArea !== $user->isEditor()) {
+            $request->session()->forget('url.intended');
         }
     }
 }

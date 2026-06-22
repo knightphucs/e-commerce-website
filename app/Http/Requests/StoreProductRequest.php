@@ -35,6 +35,8 @@ class StoreProductRequest extends FormRequest
             'status' => ['required', 'in:active,inactive'],
             'images' => ['nullable', 'array'],
             'images.*' => ['image', 'max:2048'],
+            'library_image_ids' => ['nullable', 'array'],
+            'library_image_ids.*' => ['integer', 'exists:product_images,id'],
         ];
     }
 }

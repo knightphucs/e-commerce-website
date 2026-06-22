@@ -12,31 +12,36 @@ class GetProductDetails implements Tool
 {
     public function description(): Stringable|string
     {
-        return 'Lấy thông tin chi tiết của một sản phẩm dựa trên ID. Trả về tên, giá, số lượng tồn kho, mô tả và danh mục của sản phẩm. Dùng khi người dùng muốn biết thêm về một sản phẩm cụ thể.';
+        return 'Lấy thông tin chi tiết đầy đủ của một sản phẩm, bao gồm mô tả. Nhận ID (lấy từ kết quả SearchProducts) hoặc slug của sản phẩm.';
     }
 
     public function handle(Request $request): Stringable|string
     {
-        $product = Product::with('category')->find($request['product_id']);
+        $identifier = $request->string('identifier')->trim()->toString();
+
+        $product = Product::with('category')
+            ->where('slug', $identifier)
+            ->when(is_numeric($identifier), fn ($q) => $q->orWhere('id', (int) $identifier))
+            ->first();
 
         if (! $product) {
-            return 'Sản phẩm không tồn tại.';
+            return "Không tìm thấy sản phẩm với ID hoặc slug '{$identifier}'.";
         }
 
         return json_encode([
             'id' => $product->id,
             'name' => $product->name,
-            'price' => $product->price,
-            'stock' => $product->stock,
-            'content' => $product->content,
-            'category' => $product->category?->name,
-        ]);
+            'category' => $product->category?->name ?? 'Chưa phân loại',
+            'price' => $product->formattedPrice(),
+            'stock' => $product->stock > 0 ? "{$product->stock} sản phẩm" : 'Hết hàng',
+            'description' => $product->description ?: 'Không có mô tả',
+        ], JSON_UNESCAPED_UNICODE);
     }
 
     public function schema(JsonSchema $schema): array
     {
         return [
-            'product_id' => $schema->integer('The ID of the product to retrieve.')->required(),
+            'identifier' => $schema->string()->required()->description('ID hoặc slug của sản phẩm cần xem chi tiết'),
         ];
     }
 }

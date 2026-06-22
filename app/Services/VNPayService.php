@@ -12,14 +12,11 @@ class VNPayService
 
     private string $url;
 
-    private string $returnUrl;
-
     public function __construct()
     {
         $this->tmnCode = config('services.vnpay.tmn_code', '');
         $this->hashSecret = config('services.vnpay.hash_secret', '');
         $this->url = config('services.vnpay.url', 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html');
-        $this->returnUrl = config('services.vnpay.return_url', '');
     }
 
     public function createPaymentUrl(Order $order, string $ipAddr): string
@@ -39,7 +36,7 @@ class VNPayService
             'vnp_OrderInfo' => 'Thanh toan don hang #'.$order->id,
             'vnp_OrderType' => 'other',
             'vnp_Locale' => 'vn',
-            'vnp_ReturnUrl' => $this->returnUrl,
+            'vnp_ReturnUrl' => route('payment.callback'),
             'vnp_IpAddr' => $ipAddr,
             'vnp_CreateDate' => $createDate->format('YmdHis'),
             'vnp_ExpireDate' => $createDate->copy()->addMinutes(15)->format('YmdHis'),
